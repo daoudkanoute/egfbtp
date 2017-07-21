@@ -1,0 +1,95 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Liste Entreprises de BTP{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>Admin</span></li>
+    <li><span>Utilisateurs</span></li>
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+    {%  if users|length == 0 %}
+        <div class="alert alert-info fade in nomargin">
+            <h4>Information !</h4>
+            <p>
+                Il n'y a aucune Entreprise BTP inscrit sur le site.
+            </p>
+            <p>
+                <a href="{{ path('admin_users_btp_add') }}" class="btn btn-info mt-xs mb-xs" type="button">Ajouter une entreprise de BTP</a>
+            </p>
+        </div>
+    {% else %}
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">{{ block('title') }}</h2>
+            </header>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="mb-md">
+                            <a href="{{ path('admin_users_btp_add') }}" class="btn btn-primary">Ajouter une entreprise de BTP <i class="fa fa-plus"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-none table-atelier" id="datatable-editable">
+                        <thead>
+                        <tr>
+                            <th>Société</th>
+                            <th>Adresse</th>
+                            <th>Téléphone</th>
+                            <th>Email</th>
+                            <th>Login</th>
+                            <th>Activé</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for user in users %}
+                            <tr class="gradeX">
+                                <td> {{ user.societe }} </td>
+                                <td> {{ user.adresse ? user.adresse : '---' }} </td>
+                                <td> {{ user.telephone ? user.telephone : '---' }} </td>
+                                <td> {{ user.email ? user.email : '---' }} </td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.enabled ? 'Oui' : 'Non' }}</td>
+                                <td class="actions">
+                                    {% if not user.enabled %}
+                                    <a href="{{ path('admin_users_activate', { 'id': user.id }) }}" title="Valider"><i class="fa fa-check"></i></a>
+                                    {% else %}
+                                        <a href="{{ path('homepage', { '_switch_user': user.username }) }}" ><i class="fa fa-exchange"></i></a>
+                                    {% endif %}
+                                    <a href="{{ path('admin_users_deactivate', { 'id': user.id }) }}" ><i class="fa fa-uncheck"></i></a>
+                                    <a href="{{ path('admin_users_btp_edit', { 'id': user.id }) }}"><i class="fa fa-pencil"></i></a>
+                                    <a href="#" data-href="{{ path('admin_users_delete', { 'id': user.id }) }}" data-toggle="confirmation"><i class="fa fa-trash-o"></i></a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+{% endblock body %}
+
+
+{% block javascripts %}
+    <script>
+        $('[data-toggle="confirmation"]').confirmation({
+            'title': 'Supprimer ?',
+            'btnOkLabel': 'Oui',
+            'btnCancelLabel': 'Non',
+            'placement': 'left'
+        });
+
+        $(document).ready(function() {
+            $('#datatable-editable').DataTable( {
+                "order": []
+            } );
+        } );
+
+    </script>
+{% endblock %}

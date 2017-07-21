@@ -1,0 +1,215 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Ajouter un apprenant{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>Organisme de formation</span></li>
+    <li><span>Apprenants</span></li>
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">{{ block('title') }}</h2>
+        </header>
+        <div class="panel-body">
+            {% form_theme form 'AppBundle:Apparenants:_widgets.html.twig' %}
+            {{ form_start(form, {'attr':{'class': 'form-horizontal form-bordered','novalidate': 'novalidate'}}) }}
+            {% if apprenantExist %}
+                <div class="alert alert-warning">
+                    <p><strong>{{ apprenantExist.prenom ~' '~ apprenantExist.nom }}</strong> a bien été inscrit sous le code : <strong>{{ apprenantExist.code }}</strong></p>
+                    {% if not apprenantExist.attestation %}
+                        <p>Vous pouvez maintenant démarrer le test en cliquant <a href="{{ path('attestation_start',{ 'code' : apprenantExist.code }) }}">ici</a></p>
+                        {% if form.affectResult is defined %}
+                            <p>Pour affecter la résultat saisie, cliquer {{ form_widget(form.affectResult,{'attr':{'class':'affect-btn'}}) }} </p>
+                        {% endif %}
+                    {% else %}
+                        <p>
+                            L'attestation à déjà passé  et sa résultat est {% if not apprenantExist.attestation.successed %}négatif{% else %}positif{% endif %}
+                            {% if apprenantExist.attestation.successed and apprenantExist.attestation.imageOF %}, Vous pouvez consulter l'attestation en cliquant <a href="{{ '/images/'~apprenantExist.attestation.imageOF.fileName }}" target="_blank">ici</a>{% endif %}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div class="form-group">
+                <label class="col-md-2 control-label">
+                    Nom <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    {{ form_widget(form.nom, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.nom) }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">
+                    Prénom <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    {{ form_widget(form.prenom, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.prenom) }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="inputDate">
+                    Date de Naissance <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </span>
+                        {{ form_widget(form.birthday, { 'id':'birthdayDate','attr': { 'class': 'form-control', 'data-plugin-masked-input': '', 'data-input-mask': '99/99/9999', 'placeholder': '__/__/____' }  }) }}
+                    </div>
+                    {{ form_errors(form.birthday) }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="inputTitre">
+                    Agence intérimaire <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    {{ form_widget(form.ett, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.ett) }}
+                    <p class="form-text text-muted">
+                        L'agence intérimaire que vous recherchez ne s'affiche pas ? Inviter l'agence à créer son compte sur <a href="http://www.passeport-securite-interim-btp.fr" target="_blank">www.passeport-securite-interim-btp.fr</a>
+                </div>
+            </div>
+            {% if form.onPaper is defined %}
+                {{ form_row(form.onPaper) }}
+            {% endif %}
+            {% if form.succceced is defined %}
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="inputTitre">
+                    Résultat <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    {{ form_widget(form.succceced, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.succceced) }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="inputDate">
+                    Date d'examen <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    <div class="input-group">
+                    <span class="input-group-addon">
+                        <i class="fa fa-calendar"></i>
+                    </span>
+                        {{ form_widget(form.date, { 'id':'date','attr': { 'class': 'form-control', 'data-plugin-masked-input': '', 'data-input-mask': '99/99/9999', 'placeholder': '__/__/____' }  }) }}
+                    </div>
+                    {{ form_errors(form.date) }}
+                </div>
+            </div>
+            <div class="image-row">
+                {% if form.generateAttestation is defined %}
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        {{ form_row(form.generateAttestation) }}
+                    </div>
+                </div>
+                {% endif %}
+                {{ form_widget(form.imageOF) }}
+                <div class="image-preview col-md-offset-2">
+                {% if apprenant.attestation and apprenant.attestation.imageOF %}
+                    <a href="{{ '/images/'~apprenant.attestation.imageOF.fileName }}" target="_blank">{{ apprenant.attestation.imageOF.fileName }}</a>
+                {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            <div class="row" style="margin-top:10px;">
+                <div class="col-sm-10">
+                    <div class="mb-md pull-right">
+                        <input type="submit" value="{% if edit is defined %}Modifier{% else %}Ajouter{% endif %}" class="btn btn-primary">
+                    </div>
+                </div>
+            </div>
+            {{ form_row(form._token) }}
+            </form>
+        </div>
+    </section>
+{% endblock body %}
+
+
+{% block headerscript %}
+    <style>
+        .affect-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #4F87C6;
+        }
+        .affect-btn:hover {
+            text-decoration: underline;
+        }
+        .image-preview {
+            margin-top: 15px;
+        }
+        .image-preview img {
+            max-width: 300px;
+        }
+    </style>
+{% endblock %}
+{% block javascripts %}
+    {% javascripts
+    'bundles/app/vendor/jquery-file-upload/js/vendor/jquery.ui.widget.js'
+    'bundles/app/vendor/jquery-file-upload/js/jquery.iframe-transport.js'
+    'bundles/app/vendor/jquery-file-upload/js/jquery.fileupload.js'
+    %}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    <script>
+        $(document).ready(function() {
+            $('#type:checked').parent().addClass('active');
+            $('#type').on('change', function(){
+                var form = document.querySelector('form');
+                var data = new FormData();
+                data.append($('#type').attr('name'), $('#type').val());
+                // On envoie une requête ajax POST
+                ajaxPost(form.action, data, function (res) {
+                    // On parse la réponse en DOM HTML
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(res, 'text/html');
+                    $('#form-container').html(doc.getElementById('form-container'));
+                });
+            });
+
+            $('#birthdayDate, #date').datepicker({
+                language: 'fr',
+                orientation: "bottom",
+                autoclose: true,
+                zIndexOffset: 9999
+            });
+            {% if apprenant is defined %}
+
+            $('.btn-file span').on('click',function(e) {
+                e.stopPropagation();
+                $(this).closest('.single-container').find('input[type=file]').trigger('click');
+            });
+
+            $('.fileuploader').fileupload({
+                dataType: 'json',
+                autoUpload: true,
+                maxFileSize: 1024,
+                formData: {
+                    type: 'attestations',
+                    target: 'of',
+                    id: {{ apprenant.id }}
+                },
+                add: function (e, data) {
+                    $(this).closest('.image-container').find('.widget-stats').removeClass('hidden');
+                    data.submit();
+                },
+                progressall: function (e, data) {
+                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    $( this ).closest('.image-container').find('.progress-container .bar').css('width',progress + '%');
+                    $( this ).closest('.image-container').find('.progress-extended').html(fileRender.renderExtendedProgress(data));
+                },
+                done: function (e, data) {
+                    $( this ).closest('.single-image').find('.fileupload-preview').html(data.result.originalName);
+                }
+            });
+            {% endif %}
+        });
+    </script>
+{% endblock %}

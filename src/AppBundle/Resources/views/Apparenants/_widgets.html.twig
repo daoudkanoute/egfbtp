@@ -1,0 +1,66 @@
+{% block form_row -%}
+  <div class="form-group{% if (not compound or force_error|default(false)) and not valid %} has-error{% endif %}">
+      {{- form_widget(form) -}}
+      {{- form_errors(form) -}}
+    </div>
+{%- endblock form_row %}
+
+{%- block checkbox_widget -%}
+  <div class="checkbox-inline col-md-10 col-md-offset-2">
+    <input type="checkbox" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+      {{- form_label(form,null,{'label_attr':label_attr}) -}}
+  </div>
+{%- endblock checkbox_widget -%}
+
+{% block image_widget %}
+  {% spaceless %}
+    <div class="row single-image single-container">
+      {% if form.vars.label %}
+      <label class="col-md-2 control-label" for="inputDate">
+        Attestation signée <span class="required" aria-required="true">*</span>
+      </label>
+      <div class="col-md-8 fileupload-container">
+      {% else %}
+      <div class="col-md-12 fileupload-container">
+      {% endif %}
+        <div class="fileupload {% if form.vars.data is not null %}fileupload-exists{% else %}fileupload-new{% endif %}" data-provides="fileupload">
+          <div class="input-append">
+            <div class="uneditable-input">
+              <i class="fa fa-file fileupload-exists"></i>
+              <span class="fileupload-preview">
+                {% if form.vars.data is not null %}
+                  {{ form.vars.data.alt }}
+                {% endif %}
+            </span>
+            </div>
+            <span class="btn btn-default btn-file">
+              <span class="fileupload-exists">Modifier</span>
+              <span class="fileupload-new">Sélectionner un fichier</span>
+          </span>
+            <a href="#" class="btn btn-default fileupload-exists" data-dismiss="fileupload">Supprimer</a>
+          </div>
+        </div>
+      </div>
+      <div class="{% if form.vars.label %}col-md-8 col-md-offset-1{% else %}col-md-12{% endif %} image-container">
+        {{ form_widget(form.file,{'attr':{'class':'fileuploader hidden', 'data-url': oneup_uploader_endpoint('images') }}) }}
+        {{ form_widget(form) }}
+        <div class="sidebar-widget widget-stats hidden">
+          <div class="progress-extended"></div>
+          <div class="progress-container">
+            <div class="progress-bar progress-bar-primary progress-without-number bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endspaceless %}
+{% endblock image_widget %}
+
+{% block form_errors -%}
+  {% if errors is defined and errors|length > 0 -%}
+    {%- for error in errors -%}
+      <div class="help-block">
+        <span class="text-danger"><i class="fa fa-exclamation-circle "></i> {{ error.message }}</span>
+      </div>
+    {%- endfor %}
+  {%- endif %}
+{%- endblock form_errors %}

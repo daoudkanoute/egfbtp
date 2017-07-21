@@ -1,0 +1,66 @@
+{% block form_row -%}
+  <div class="tab-pane{% if form.vars.attr['data-id'] == 1 %} active{% endif %}" id="tab{{ form.vars.attr['data-id']  }}">
+      <div class="form-group{% if (not compound or force_error|default(false)) and not valid %} has-error{% endif %}">
+          <div class="col-md-8">
+              <div class="qcm-question">
+                  {{- form_label(form) -}}
+                  {% if form.vars.attr['data-sound'] %}
+                      <div class="sound-player">
+                          <div id="sound-{{ form.vars.id }}"></div>
+                          <script>
+                              jwplayer("sound-{{ form.vars.id }}").setup({
+                                  file: "/{{ form.vars.attr['data-sound'] }}",
+                                  width: 350,
+                                  height: 40
+                              });
+                          </script>
+                      </div>
+                  {% endif %}
+              </div>
+              <hr/>
+              <div class="qcm-reponses row">
+                  {{- form_widget(form) -}}
+                  {{- form_errors(form) -}}
+              </div>
+          </div>
+          <div class="col-md-4">
+              {% if form.vars.attr['data-image'] is defined and form.vars.attr['data-image'] %}
+                  <img src="/{{ form.vars.attr['data-image'] }}" class="img-responsive" />
+              {% endif %}
+          </div>
+      </div>
+  </div>
+{%- endblock form_row %}
+
+{% block form_errors -%}
+  {% if errors is defined and errors|length > 0 -%}
+    {%- for error in errors -%}
+      <div class="alert alert-danger">
+        <strong><i class="fa fa-exclamation-circle "></i></strong> {{ error.message }}
+      </div>
+    {%- endfor %}
+  {%- endif %}
+{%- endblock form_errors %}
+
+{%- block choice_widget_expanded -%}
+    {%- for child in form if child.vars.value != '' %}
+    <div {{ block('widget_container_attributes') }}>
+      {{- form_widget(child) -}}
+      {{- form_label(child, null, {translation_domain: choice_translation_domain}) -}}
+      </div>
+    {% endfor -%}
+{%- endblock choice_widget_expanded -%}
+
+{%- block checkbox_widget -%}
+    {% if form.vars.attr['image'] %}
+        <img src="/images/{{ form.vars.attr['image'] }}" class="img-responsive" />
+    {% endif %}
+    <input type="checkbox" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+{%- endblock checkbox_widget -%}
+
+{%- block radio_widget -%}
+    {% if form.vars.attr['image'] %}
+        <img src="/images/{{ form.vars.attr['image'] }}" class="img-responsive" />
+    {% endif %}
+    <input type="radio" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+{%- endblock radio_widget -%}

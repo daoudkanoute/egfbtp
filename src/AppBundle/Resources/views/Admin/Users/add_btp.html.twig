@@ -1,0 +1,116 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Ajouter une Entreprise de BTP{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>Admin</span></li>
+    <li><span>Utilisateurs</span></li>
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">{{ block('title') }}</h2>
+        </header>
+        <div class="panel-body">
+            {% form_theme form _self %}
+            {{ form_start(form, {'attr':{'class': 'form-horizontal form-bordered','novalidate': 'novalidate'}}) }}
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="inputTitre">
+                    Société <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    {{ form_widget(form.societe, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.societe) }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="inputTitre">
+                    Adresse <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    {{ form_widget(form.adresse, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.adresse) }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">
+                    Téléphone <span class="required" aria-required="true">*</span>
+                </label>
+                <div class="col-md-8">
+                    {{ form_widget(form.telephone, { 'attr': { 'class': 'form-control' } }) }}
+                    {{ form_errors(form.telephone) }}
+                </div>
+            </div>
+            <div id="form-container">
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="inputTitre">
+                        E-mail <span class="required" aria-required="true">*</span>
+                    </label>
+                    <div class="col-md-8">
+                        {{ form_widget(form.email, { 'attr': { 'class': 'form-control' } }) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="inputTitre">
+                        Nom d'utilisateur <span class="required" aria-required="true">*</span>
+                    </label>
+                    <div class="col-md-8">
+                        {{ form_widget(form.username, { 'attr': { 'class': 'form-control' } }) }}
+                        {{ form_errors(form.username) }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="inputTitre">
+                        Mot de passe {% if edit is not defined %}<span class="required" aria-required="true">*</span>{% endif %}
+                    </label>
+                    <div class="col-md-8">
+                        {{ form_widget(form.plainPassword, { 'attr': { 'class': 'form-control' } }) }}
+                        {{ form_errors(form.plainPassword) }}
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+                <div class="col-sm-10">
+                    <div class="mb-md pull-right">
+                        <input type="submit" value="Ajouter" class="btn btn-primary">
+                    </div>
+                </div>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock body %}
+
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function() {
+            $('#type:checked').parent().addClass('active');
+            $('#type').on('change', function(){
+                var form = document.querySelector('form');
+                var data = new FormData();
+                data.append($('#type').attr('name'), $('#type').val());
+                // On envoie une requête ajax POST
+                ajaxPost(form.action, data, function (res) {
+                    // On parse la réponse en DOM HTML
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(res, 'text/html');
+                    $('#form-container').html(doc.getElementById('form-container'));
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+
+{% block form_errors -%}
+    {% if errors is defined and errors|length > 0 -%}
+        {%- for error in errors -%}
+            <div class="help-block">
+                <span class="text-danger"><i class="fa fa-exclamation-circle "></i> {{ error.message }}</span>
+            </div>
+        {%- endfor %}
+    {%- endif %}
+{%- endblock form_errors %}

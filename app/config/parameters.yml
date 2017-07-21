@@ -1,0 +1,13 @@
+# This file is auto-generated during the composer install
+parameters:
+    database_host: dev_db_btp
+    database_port: null
+    database_name: egfbtp_prod
+    database_user: root
+    database_password: root
+    mailer_transport: smtp
+    mailer_host: in-v3.mailjet.com
+    mailer_user: 00b0d8aef795cf18f6aedfa0ea94cc46
+    mailer_password: 47bd9a0dde54e18013cfa8511656b0a8
+    mailer_port: 587
+    secret: 9baf686cb11b70fa0848a2e37886d2395f8c46c9

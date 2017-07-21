@@ -1,0 +1,59 @@
+{% trans_default_domain 'FOSUserBundle' %}
+{% form_theme form _self %}
+{{ form_start(form, {'method': 'post', 'action': path('fos_user_registration_register'), 'attr': {'class': 'fos_user_registration_register','novalidate':'novalidate'}}) }}
+    <div class="form-group mb-lg">
+        <label>Raison Sociale</label>
+        {{ form_widget(form.societe,{'attr':{'class':'form-control input-lg'}}) }}
+        {{ form_errors(form.societe) }}
+    </div>
+
+    <div class="form-group mb-lg">
+        <label>E-mail</label>
+        {{ form_widget(form.email,{'attr':{'class':'form-control input-lg'}}) }}
+        {{ form_errors(form.email) }}
+    </div>
+
+    <div class="form-group mb-lg">
+        <label>Adresse</label>
+        {{ form_widget(form.adresse,{'attr':{'class':'form-control input-lg'}}) }}
+        {{ form_errors(form.adresse) }}
+    </div>
+
+    <div class="form-group mb-lg">
+        <label>N° SIRET</label>
+        {{ form_widget(form.siret,{'attr':{'class':'form-control input-lg'}}) }}
+        {{ form_errors(form.siret) }}
+    </div>
+
+    <div class="form-group mb-none">
+        <div class="row">
+            <div class="col-sm-6 mb-lg">
+                <label>Mot de passe</label>
+                {{ form_widget(form.plainPassword.first,{'attr':{'class':'form-control input-lg'}}) }}
+            </div>
+            <div class="col-sm-6 mb-lg">
+                <label>Mot de passe de confirmation</label>
+                {{ form_widget(form.plainPassword.second,{'attr':{'class':'form-control input-lg'}}) }}
+            </div>
+            {{ form_errors(form.plainPassword.first) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 text-right">
+            <input type="submit" class="btn btn-primary hidden-xs" value="S'inscrire" />
+            <input type="submit" class="btn btn-primary btn-block btn-lg visible-xs mt-lg" value="S'inscrire" />
+        </div>
+    </div>
+    <hr/>
+    <p class="text-center">Vous avez déjà un compte? <a href="{{ path('fos_user_security_login') }}">Se connecter!</a></p>
+{{ form_end(form) }}
+
+{% block form_errors -%}
+    {% if errors is defined and errors|length > 0 -%}
+        {%- for error in errors -%}
+            <div class="help-block">
+                <span class="text-danger"><i class="fa fa-exclamation-circle "></i> {{ error.message }}</span>
+            </div>
+        {%- endfor %}
+    {%- endif %}
+{%- endblock form_errors %}

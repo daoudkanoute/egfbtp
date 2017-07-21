@@ -1,0 +1,100 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Liste d'apprenants{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>Administration</span></li>
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+    {%  if apprenants|length == 0 %}
+        <div class="alert alert-info fade in nomargin">
+            <h4>Information !</h4>
+            <p>
+                Vous n'avez pas encore crée d'apprenant.
+            </p>
+        </div>
+    {% else %}
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">{{ block('title') }}</h2>
+            </header>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-none table-atelier" id="datatable-editable">
+                        <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Date de Naissance</th>
+                            <th>Attestation</th>
+                            <th>Date d'examen</th>
+                            <th>OF</th>
+                            <th>ETT</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for apprenant in apprenants %}
+                            <tr class="gradeX">
+                                <td> {{ apprenant.code }} </td>
+                                <td>{{ apprenant.nom }}</td>
+                                <td>{{ apprenant.prenom }}</td>
+                                <td>{{ apprenant.birthday|date('d/m/Y') }}</td>
+                                <td>{{ apprenant.attestation ? (apprenant.attestation.successed ? 'Réussite' : 'Echec') : 'Examen pas encore passé' }}</td>
+                                <td>{{ apprenant.attestation ? apprenant.attestation.date|date('d/m/Y') : '-' }}</td>
+                                <td>{{ apprenant.of ? apprenant.of.societe : '-' }}</td>
+                                <td>{{ apprenant.ett ? apprenant.ett.societe : '-' }}</td>
+
+                                <td class="actions">
+                                    {% if apprenant.attestation %}
+                                        {% if apprenant.attestation.imageOF %}
+                                        <a href="{{ '/images/'~apprenant.attestation.imageOF.fileName }}" target="_blank"><i class="fa fa-eye"></i></a>
+                                        {% endif %}
+                                        {% if apprenant.attestation and not apprenant.attestation.imageOF %}
+                                            <a href="{{ path('of_edit_manuelle_apprenant', { 'code': apprenant.code }) }}"><i class="fa fa-pencil"></i></a>
+                                        {% endif %}
+                                    {% else %}
+                                        <a href="javascript:void(0);" data-href="{{ path('attestation_start', { 'code': apprenant.code }) }}" data-toggle="confirmation_exam"><i class="fa fa-caret-square-o-right"></i></a>
+                                        <a href="{{ path('of_edit_apprenant', { 'code': apprenant.code }) }}"><i class="fa fa-pencil"></i></a>
+                                    {% endif %}
+                                    <a href="javascript:void(0);" data-href="{{ path('of_delete_apprenant', { 'code': apprenant.code }) }}" data-toggle="confirmation"><i class="fa fa-trash-o"></i></a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+{% endblock body %}
+
+
+{% block javascripts %}
+
+    <script>
+        $('[data-toggle="confirmation"]').confirmation({
+            'title': 'Supprimer ?',
+            'btnOkLabel': 'Oui',
+            'btnCancelLabel': 'Non',
+            'placement': 'left'
+        });
+
+        $('[data-toggle="confirmation_exam"]').confirmation({
+            'title': 'Vous confirmez vouloir passer l\'examen ?',
+            'btnOkLabel': 'Oui',
+            'btnCancelLabel': 'Non',
+            'placement': 'left'
+        });
+
+        $(document).ready(function() {
+            $('#datatable-editable').DataTable( {
+                "order": []
+            } );
+        } );
+    </script>
+
+{% endblock %}

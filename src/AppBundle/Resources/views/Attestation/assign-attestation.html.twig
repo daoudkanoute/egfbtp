@@ -1,0 +1,105 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Attestation apprenant{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>Agences intérimaires</span></li>
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">{{ block('title') }}</h2>
+        </header>
+        <div class="panel-body">
+            <h4>Attestation Signé par l'organisme de formation</h4>
+            {% if apprenant.attestation and apprenant.attestation.imageOF %}
+                <div class="image-preview">
+                    <img src="{{ '/images/'~apprenant.attestation.imageOF.fileName }}" />
+                    <a href="{{ '/images/'~apprenant.attestation.imageOF.fileName }}" download>Télécharger</a>
+                </div>
+            {% endif %}
+            <hr/>
+            {% form_theme form 'AppBundle:Apparenants:_widgets.html.twig' %}
+            {{ form_start(form, {'attr':{'class': 'form-horizontal form-bordered','novalidate': 'novalidate'}}) }}
+            <div class="image-row">
+                {{ form_widget(form.imageETT) }}
+                <div class="image-preview col-md-offset-2">
+                {% if apprenant.attestation and apprenant.attestation.imageETT %}
+                    <img src="{{ '/images/'~apprenant.attestation.imageETT.fileName }}" />
+                {% endif %}
+                </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+                <div class="col-sm-10">
+                    <div class="mb-md pull-right">
+                        <input type="submit" value="Ajouter" class="btn btn-primary">
+                    </div>
+                </div>
+            </div>
+            {{ form_row(form._token) }}
+            </form>
+        </div>
+    </section>
+{% endblock body %}
+
+
+{% block headerscript %}
+    <style>
+        .image-preview {
+            margin-top: 15px;
+        }
+        .image-preview img {
+            max-width: 300px;
+        }
+    </style>
+{% endblock %}
+{% block javascripts %}
+    {% javascripts
+    'bundles/app/vendor/jquery-file-upload/js/vendor/jquery.ui.widget.js'
+    'bundles/app/vendor/jquery-file-upload/js/jquery.iframe-transport.js'
+    'bundles/app/vendor/jquery-file-upload/js/jquery.fileupload.js'
+    %}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    <script>
+        $(document).ready(function() {
+            $('.btn-file span').on('click',function(e) {
+                e.stopPropagation();
+                $(this).closest('.single-container').find('input[type=file]').trigger('click');
+            });
+
+            $('.fileuploader').fileupload({
+                dataType: 'json',
+                autoUpload: true,
+                maxFileSize: 1024,
+                formData: {
+                    type: 'attestations',
+                    target: 'ett',
+                    id: {{ apprenant.id }}
+                },
+                add: function (e, data) {
+                    $(this).closest('.image-container').find('.widget-stats').removeClass('hidden');
+                    data.submit();
+                },
+                progressall: function (e, data) {
+                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    $( this ).closest('.image-container').find('.progress-container .bar').css('width',progress + '%');
+                    $( this ).closest('.image-container').find('.progress-extended').html(fileRender.renderExtendedProgress(data));
+                },
+                done: function (e, data) {
+                    $( this ).closest('.single-image').find('.fileupload-preview').html(data.result.originalName);
+                    var img = $(this).closest('.image-row').find('.image-preview img');
+                    if(!img.length) {
+                        img = $('<img>').prependTo($(this).closest('.image-row').find('.image-preview'));
+                    }
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        img.attr('src', e.target.result);
+                    };
+                    reader.readAsDataURL(data.files[0]);
+                }
+            });
+        });
+    </script>
+{% endblock %}

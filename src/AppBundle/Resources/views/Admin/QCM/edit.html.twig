@@ -1,0 +1,367 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}QCM{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>Admin</span></li>
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+    <section class="panel">
+        <header class="panel-heading">
+            <h2 class="panel-title">{{ block('title') }}</h2>
+        </header>
+        <div class="panel-body">
+            {% form_theme form 'AppBundle:Admin:QCM/_widgets.html.twig' %}
+            {{ form_start(form, {'attr':{'class': 'form-horizontal form-bordered','novalidate': 'novalidate'}}) }}
+            <div class="form-group">
+                <div class="col-md-12" id="questions_container">
+                    <div id="questions">
+                        {{ form_widget(form.questions) }}
+                    </div>
+                    <button type="button" class="btn btn-default" id="add_question" class="btn btn-default">
+                        <i class="fa fa-plus position-left"></i>
+                        {{ "Ajouter un question"|trans }}
+                    </button>
+                </div>
+            </div>
+            <hr/>
+            <div class="form-group">
+                <label class="col-md-4 control-label">
+                    Resultat Minimum pour Réussir le test :
+                </label>
+                <div class="col-md-8" data-plugin-spinner data-plugin-options='{ "value":{{ QCM.successMinimum }}, "min": 0, "max": {{ form.questions.count }} }'>
+                    <div class="input-group" style="width:150px;">
+                        {{ form_widget(form.successMinimum) }}
+                        <div class="spinner-buttons input-group-btn">
+                            <button type="button" class="btn btn-default spinner-up">
+                                <i class="fa fa-angle-up"></i>
+                            </button>
+                            <button type="button" class="btn btn-default spinner-down">
+                                <i class="fa fa-angle-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr/>
+            <button type="submit" class="btn btn-primary" class="btn btn-primary pull-right">{{ "Enregistrer"|trans }}</button>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock body %}
+
+{% block headerscript %}
+    <style>
+        .single-image , .single-sound {
+            padding: 10px 0;
+        }
+        .question h2 {
+            float: left;
+            margin: 5px 20px;
+            padding: 5px;
+            background: #efefef;
+            border: 2px solid #ed9c28;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts
+    'bundles/app/vendor/jquery-file-upload/js/vendor/jquery.ui.widget.js'
+    'bundles/app/vendor/jquery-file-upload/js/jquery.iframe-transport.js'
+    'bundles/app/vendor/jquery-file-upload/js/jquery.fileupload.js'
+    %}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    <script type="application/javascript">
+        var $questions, $addQuestion;
+        var $responses, $addResponse;
+
+        function appendForm($container, prototypeValue) {
+            var regex = typeof prototypeValue !== 'undefined' ? new RegExp(prototypeValue,'g') : new RegExp('__name__','g');
+            var index     = $container.data('index');
+            var prototype = $container.data('prototype');
+            var html      = prototype.replace(regex, index);
+
+            var $item = $(html);
+
+            $container.data('index', index + 1);
+            $container.append($item);
+
+            return $item;
+        }
+
+        function bindActions($instance) {
+            if($instance.find('.select2').length)
+                $instance.find('.select2').select2();
+            $instance.find('[data-action="delete-target"]').click(function(e) {
+                e.preventDefault();
+                $instance.remove();
+            });
+        }
+
+        $(document).ready(function() {
+
+            $('*[data-dismiss="fileupload"]').on('click',function(e) {
+                e.stopPropagation();
+                var type = $(this).closest('.single-container').data('type');
+                var question_id = $(this).closest('.question').index();
+                var reponse_id = $(this).closest('.single_response').index();
+
+                $(this).closest('.fileupload').find('.fileupload-preview').html('');
+                $(this).closest('.fileupload').removeClass('fileupload-exists');
+                $(this).closest('.fileupload').addClass('fileupload-new');
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/delete/'+type+'/'+question_id+'/'+reponse_id
+                });
+            });
+
+            $questions = $('#qcm_questions');
+            $questions.data('index', {{ form.questions.count }});
+
+            $addQuestion = $('#add_question');
+            $addQuestion.click(function() {
+                var currentQuestion = appendForm($questions, '__question_num__');
+                bindActions(currentQuestion);
+
+                var index     = $questions.data('index')-1;
+                initSpinner(index+1);
+                $responses = $('#qcm_questions_'+index+'_responses');
+                $responses.data('index', 0);
+                var _this = $(currentQuestion).find('.single-image .fileuploader');
+
+                _this.fileupload({
+                    dataType: 'json',
+                    autoUpload: true,
+                    maxFileSize: 1024,
+                    formData: {
+                        type: 'qcm',
+                        target: 'image',
+                        position: _this.closest('.question').index()
+                    },
+                    add: function (e, data) {
+                        $(this).closest('.image-container').find('.widget-stats').removeClass('hidden');
+                        data.submit();
+                    },
+                    progressall: function (e, data) {
+                        var progress = parseInt(data.loaded / data.total * 100, 10);
+                        $( this ).closest('.image-container').find('.progress-container .bar').css('width',progress + '%');
+                        $( this ).closest('.image-container').find('.progress-extended').html(fileRender.renderExtendedProgress(data));
+                    },
+                    done: function (e, data) {
+                        $( this ).closest('.single-image').find('.fileupload-preview').html(data.result.originalName);
+                    }
+                });
+
+                _this = $(currentQuestion).find('.single-sound .fileuploader');
+                _this.fileupload({
+                    dataType: 'json',
+                    autoUpload: true,
+                    maxFileSize: 1024,
+                    formData: {
+                        type: 'qcm',
+                        target: 'sound',
+                        position: _this.closest('.question').index()
+                    },
+                    add: function (e, data) {
+                        $(this).closest('.sound-container').find('.widget-stats').removeClass('hidden');
+                        data.submit();
+                    },
+                    progressall: function (e, data) {
+                        var progress = parseInt(data.loaded / data.total * 100, 10);
+                        $( this ).closest('.sound-container').find('.progress-container .bar').css('width',progress + '%');
+                        $( this ).closest('.sound-container').find('.progress-extended').html(fileRender.renderExtendedProgress(data));
+                    },
+                    done: function (e, data) {
+                        $( this ).closest('.single-sound').find('.fileupload-preview').html(data.result.originalName);
+                    }
+                });
+
+                /*  UPLOAD */
+                $(currentQuestion).find('.btn-file span').on('click',function(e) {
+                    e.stopPropagation();
+                    $(this).closest('.single-container').find('input[type=file]').trigger('click');
+                });
+
+                $addResponse = $('#add_response_'+index);
+                $addResponse.click(function() {
+                    var currentResponse = appendForm($responses,'__reponse_num__');
+                    bindActions(currentResponse);
+
+                    $(currentResponse).find('.response-images .fileuploader').each(function() {
+                        var _this = $(this);
+                        _this.fileupload({
+                            dataType: 'json',
+                            autoUpload: true,
+                            maxFileSize: 1024,
+                            formData: {
+                                type: 'qcm',
+                                target: 'response',
+                                question: _this.closest('.question').index(),
+                                response: _this.closest('.single_response').index()
+                            },
+                            add: function (e, data) {
+                                $(this).closest('.image-container').find('.widget-stats').removeClass('hidden');
+                                data.submit();
+                            },
+                            progressall: function (e, data) {
+                                var progress = parseInt(data.loaded / data.total * 100, 10);
+                                $( this ).closest('.image-container').find('.progress-container .bar').css('width',progress + '%');
+                                $( this ).closest('.image-container').find('.progress-extended').html(fileRender.renderExtendedProgress(data));
+                            },
+                            done: function (e, data) {
+                                $( this ).closest('.single-image').find('.fileupload-preview').html(data.result.originalName);
+                            }
+                        });
+                    });
+
+                    $(currentResponse).find('.btn-file span').on('click',function(e) {
+                        e.stopPropagation();
+                        $(this).closest('.single-container').find('input[type=file]').trigger('click');
+                    });
+
+                });
+            });
+
+            $('.question').each(function( index ) {
+                var _this = $(this);
+                $('#qcm_questions_'+index+'_responses').data('index',_this.find('.single_response').length);
+                _this.find('> [data-action="delete-target"]').click(function(e) {
+                    e.preventDefault();
+                    _this.remove();
+                });
+                _this.find('.single_response').each(function(index, item) {bindActions($(item)); });
+                _this.find('.question').each(function(index, item) {bindActions($(item)); });
+
+                $('#add_response_'+index).click(function() {
+                    $responses = $('#qcm_questions_'+index+'_responses');
+                    var currentResponse = appendForm($responses,'__reponse_num__');
+                    bindActions(currentResponse);
+
+                    $(currentResponse).find('.btn-file span').on('click',function(e) {
+                        e.stopPropagation();
+                        $(this).closest('.single-container').find('input[type=file]').trigger('click');
+                    });
+                });
+            });
+
+            $('.select2').on('change', function(){
+                var form = document.querySelector('form');
+                var data = new FormData();
+                data.append($(this).attr('name'), $(this).val());
+                // On envoie une requête ajax POST
+                ajaxPost(form.action, data, function (res) {
+                    var input          = $(this).closest('.question').find('.responses-list > .col-xs-11 > .form-group');
+                    // On parse la réponse en DOM HTML
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(res, 'text/html');
+                    input.html($(doc).find('select[name="$(this).attr(\'name\')"]').closest('.question').find('.responses-list > .col-xs-11 > .form-group'));
+                });
+            });
+            initSpinner($('#qcm_questions').data('index'));
+
+
+            /*  UPLOAD */
+            $('.btn-file span').on('click',function(e) {
+                e.stopPropagation();
+                $(this).closest('.single-container').find('input[type=file]').trigger('click');
+            });
+
+            $('.question-section .single-image .fileuploader').each(function() {
+                var _this = $(this);
+                _this.fileupload({
+                    dataType: 'json',
+                    autoUpload: true,
+                    maxFileSize: 1024,
+                    formData: {
+                        type: 'qcm',
+                        target: 'image',
+                        position: _this.closest('.question').index()
+                    },
+                    add: function (e, data) {
+                        $(this).closest('.image-container').find('.widget-stats').removeClass('hidden');
+                        data.submit();
+                    },
+                    progressall: function (e, data) {
+                        var progress = parseInt(data.loaded / data.total * 100, 10);
+                        $( this ).closest('.image-container').find('.progress-container .bar').css('width',progress + '%');
+                        $( this ).closest('.image-container').find('.progress-extended').html(fileRender.renderExtendedProgress(data));
+                    },
+                    done: function (e, data) {
+                        $( this ).closest('.single-image').find('.fileupload-preview').html(data.result.originalName);
+                    }
+                });
+            });
+
+            $('.question-section .single-sound .fileuploader').each(function() {
+                var _this = $(this);
+                _this.fileupload({
+                    dataType: 'json',
+                    autoUpload: true,
+                    maxFileSize: 1024,
+                    formData: {
+                        type: 'qcm',
+                        target: 'sound',
+                        position: _this.closest('.question').index()
+                    },
+                    add: function (e, data) {
+                        $(this).closest('.sound-container').find('.widget-stats').removeClass('hidden');
+                        data.submit();
+                    },
+                    progressall: function (e, data) {
+                        var progress = parseInt(data.loaded / data.total * 100, 10);
+                        $( this ).closest('.sound-container').find('.progress-container .bar').css('width',progress + '%');
+                        $( this ).closest('.sound-container').find('.progress-extended').html(fileRender.renderExtendedProgress(data));
+                    },
+                    done: function (e, data) {
+                        $( this ).closest('.single-sound').find('.fileupload-preview').html(data.result.originalName);
+                    }
+                });
+            });
+
+            $('.response-images .fileuploader').each(function() {
+                var _this = $(this);
+                _this.fileupload({
+                    dataType: 'json',
+                    autoUpload: true,
+                    maxFileSize: 1024,
+                    formData: {
+                        type: 'qcm',
+                        target: 'response',
+                        question: _this.closest('.question').index(),
+                        response: _this.closest('.single_response').index()
+                    },
+                    add: function (e, data) {
+                        $(this).closest('.image-container').find('.widget-stats').removeClass('hidden');
+                        data.submit();
+                    },
+                    progressall: function (e, data) {
+                        var progress = parseInt(data.loaded / data.total * 100, 10);
+                        $( this ).closest('.image-container').find('.progress-container .bar').css('width',progress + '%');
+                        $( this ).closest('.image-container').find('.progress-extended').html(fileRender.renderExtendedProgress(data));
+                    },
+                    done: function (e, data) {
+                        $( this ).closest('.single-image').find('.fileupload-preview').html(data.result.originalName);
+                    }
+                });
+            });
+        });
+
+        function initSpinner(maxValue) {
+            $('[data-plugin-spinner]').each(function() {
+                var $this = $( this ),
+                        opts = {};
+                $(this).attr('data-plugin-options','{ "value":{{ QCM.successMinimum }}, "min": 0, "max": '+maxValue+' }');
+                var pluginOptions = { "value":{{ QCM.successMinimum }}, "min": 0, "max": maxValue };
+                if (pluginOptions)
+                    opts = pluginOptions;
+
+                $this.themePluginSpinner(opts);
+            });
+        }
+
+    </script>
+{% endblock %}

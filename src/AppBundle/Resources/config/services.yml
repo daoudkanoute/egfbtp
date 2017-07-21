@@ -1,0 +1,42 @@
+services:
+    app.apprenant.code:
+        class: UserBundle\Services\Code
+        arguments:
+            - "@doctrine.orm.entity_manager"
+
+    app.form.qcm_exam:
+        class: AppBundle\Form\Type\QCMExamType
+        arguments:
+            - "@=service('doctrine.orm.default_entity_manager').getRepository('AppBundle:QCM')"
+        tags:
+            - { name: form.type }
+
+    app.services.qcm:
+        class: AppBundle\Services\QCM
+        arguments:
+            - "@=service('doctrine.orm.default_entity_manager').getRepository('AppBundle:QCM')"
+            - "@=service('doctrine.orm.default_entity_manager').getRepository('AppBundle:Question')"
+
+    app.upload_listener:
+          class: AppBundle\EventListener\UploadListener
+          arguments: ["@doctrine.orm.entity_manager"]
+          tags:
+              - { name: kernel.event_listener, event: oneup_uploader.post_persist, method: onUpload }
+
+    app.form.type.choices_images:
+        class: AppBundle\Form\Type\ResponseChoicesType
+        tags:
+            - { name: form.type }
+
+    app.twig.extension:
+        class: AppBundle\Twig\AppTwigExtension
+        arguments:
+            - "@=service('doctrine.orm.default_entity_manager')"
+            - "@=service('security.token_storage').getToken()"
+        tags:
+            - { name: twig.extension }
+
+    twig.extension.intl:
+        class: Twig_Extensions_Extension_Intl
+        tags:
+            - { name: twig.extension }

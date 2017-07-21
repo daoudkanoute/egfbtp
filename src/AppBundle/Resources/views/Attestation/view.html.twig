@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Web Fonts  -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ absolute_url(asset('bundles/app/vendor/bootstrap/css/bootstrap.min.css')) }}" />
+    <link rel="stylesheet" href="{{ absolute_url(asset('bundles/app/vendor/magnific-popup/magnific-popup.css')) }}" />
+    <link rel="stylesheet" href="{{ absolute_url(asset('bundles/app/css/theme.css')) }}" />
+    <link rel="stylesheet" href="{{ absolute_url(asset('bundles/app/css/skins/default.css')) }}" />
+    <link rel="stylesheet" href="{{ absolute_url(asset('bundles/app/css/theme-custom.css')) }}" />
+    <style>
+        .body-locked .panel-sign {
+            max-width: 1024px;
+        }
+        .body-sign .panel-sign .panel-body {
+            border-top-color: #ffffff;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #section-to-print, #section-to-print * {
+                visibility: visible;
+            }
+            #section-to-print {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<section class="body-sign body-locked">
+    <div class="center-sign">
+        <div class="panel panel-sign" id="section-to-print">
+            <div class="panel-body" style="height:768px;">
+                <div class="text-center">
+                    <img src="{{ absolute_url(asset('pasi-logo.png')) }}" alt="logo-pasi" />
+                    <h3 class="text-uppercase">Attestation de résultat formation passeport sécurité intérim</h3>
+                </div>
+                <hr/>
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-4 col-xs-4"><b>Code: </b></div>
+                        <div class="col-md-8 col-xs-8">{{ apprenant.code }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 col-xs-4"><b>Nom: </b></div>
+                        <div class="col-md-8 col-xs-8">{{ apprenant.nom }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 col-xs-4"><b>Prénom: </b></div>
+                        <div class="col-md-8 col-xs-8">{{ apprenant.prenom }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 col-xs-4"><b>Date de passation du test: </b></div>
+                        <div class="col-md-8 col-xs-8">{{ apprenant.attestation.date|date('d/m/Y') }}</div>
+                    </div>
+                    {% if apprenant.of %}
+                    <div class="row">
+                        <div class="col-md-4 col-xs-4"><b>L’organisme de formation: </b></div>
+                        <div class="col-md-8 col-xs-8">{{ apprenant.of.societe }}</div>
+                    </div>
+                    {% endif %}
+                    <br/>
+                    <div class="row">
+                        <div class="col-md-4 col-xs-4"><b>A réussi: </b></div>
+                        <div class="col-md-8 {% if apprenant.attestation.successed %}text-success{% endif %}">
+                            {% if apprenant.attestation.successed %}
+                                <i class="fa fa-check-square-o fa-3x" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-square-o fa-3x" aria-hidden="true"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 col-xs-4"><b>A échoué: </b></div>
+                        <div class="col-md-8 {% if not apprenant.attestation.successed %}text-danger{% endif %}">
+                            {% if not apprenant.attestation.successed %}
+                                <i class="fa fa-check-square-o fa-3x" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-square-o fa-3x" aria-hidden="true"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr style="margin-bottom: 40px;margin-top: 30px;"/>
+                    <div class="row">
+                        <div class="col-md-5 col-xs-5 text-center">
+                            <b>Le stagiaire</b><br/>(signature)
+                        </div>
+                        <div class="col-md-2 col-xs-2 text-center">
+                        </div>
+                        <div class="col-md-5 col-xs-5 text-center">
+                            <b>L’organisme de formation</b><br/>(cachet et signature)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% if print %}
+<script>window.print();</script>
+{% endif %}
+</body>
+</html>

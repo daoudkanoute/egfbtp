@@ -1,0 +1,218 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Statistiques{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">Nombre d'attestations PASI émises</h2>
+                <p class="panel-subtitle">Total cumulé des attestations émises à ce jour: <strong>{{ todayAttestationsCount }}</strong></p>
+                <p class="panel-subtitle">Total cumulé des attestations de réussite émises à ce jour: <strong>{{ todayAttestationsReussitCount }}</strong></p>
+                <h2>
+                    <strong>
+                        <select class="form-control" id="years">
+                            {% for year,value in attestationsGraphs %}
+                                <option value="{{ year }}" {% if loop.first %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </strong>
+                </h2>
+            </header>
+            <div class="panel-body chart-data-selector" id="selectorWrapper">
+                <div id="morrisStackedItems" class="chart-data-selector-items">
+                <!-- Morris: Area -->
+                {% for year,graphData in attestationsGraphs %}
+                    <div class="chart chart-md" id="morrisStacked-{{ year }}" data-rel="{{ year }}"></div>
+                    <script type="text/javascript">
+                        var morrisStackedData{{ year }} = [
+                            {% for month,values in graphData %}
+                            {
+                                'y'    : '{{ month }}',
+                                'b'    : {{ values.reussites }},
+                                'a'    : {{ values.echecs }}
+                            },
+                            {% endfor %}
+                        ];
+                    </script>
+                {% endfor %}
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-md-12">
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">Nombre de recherches dans l'annuaire des apprenants par les ETT </h2>
+            </header>
+            <div class="panel-body">
+                <div id="ChartistSimpleLineChart" class="ct-chart ct-perfect-fourth ct-golden-section"></div>
+            </div>
+        </section>
+    </div>
+    <div class="col-md-12">
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">Nombre de recherches dans l'annuaire des apprenants par les entreprises de BTP</h2>
+            </header>
+            <div class="panel-body">
+                <div id="ChartistSimpleLineChart2" class="ct-chart ct-perfect-fourth ct-golden-section"></div>
+            </div>
+        </section>
+    </div>
+    <div class="col-md-12">
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">Nombre de stagiaires et de réussite au test PASI par organisme de formation</h2>
+            </header>
+            <div class="panel-body" style="max-height: 500px;">
+                <div id="ChartistOverlappingBarsOnMobile" class="ct-chart ct-perfect-fourth ct-golden-section"  style="max-height: 470px;"></div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock body %}
+
+{% block javascripts %}
+    {% javascripts
+    '@AppBundle/Resources/public/vendor/raphael/raphael.js'
+    '@AppBundle/Resources/public/vendor/chartist/chartist.js'
+    '@AppBundle/Resources/public/vendor/chartist/chartist-plugin-legend.js'
+    '@AppBundle/Resources/public/vendor/morris.js/morris.js'
+    %}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    <script>
+        (function() {
+            var apprenantsByOFGraph = {{ apprenantsByOFGraph|json_encode|raw }};
+            $('#years').themePluginMultiSelect().on('change', function() {
+                var rel = $(this).val();
+                $('#morrisStackedItems .chart').removeClass('chart-active').addClass('chart-hidden');
+                $('#morrisStackedItems .chart[data-rel="' + rel + '"]').addClass('chart-active').removeClass('chart-hidden');
+            });
+
+            $('#years').trigger('change');
+            $('#selectorWrapper').addClass('ready');
+
+            {% for year,graphData in attestationsGraphs %}
+            Morris.Bar({
+                resize: true,
+                element: 'morrisStacked-{{ year }}',
+                data: morrisStackedData{{ year }},
+                xkey: 'y',
+                ykeys: ['a', 'b'],
+                labels: ['Réussites', 'Échecs'],
+                barColors: ['#2baab1', '#0088cc'],
+                fillOpacity: 0.7,
+                smooth: false,
+                stacked: true,
+                hideHover: true
+            });
+            {% endfor %}
+
+
+            new Chartist.Line('#ChartistSimpleLineChart', {
+                labels: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Dec'],
+                series: [
+                    {% for year,month in searchsGraphs %}
+                        [{% for val in month %}{{ val }}{% if not loop.last %},{% endif %}{% endfor %}]{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            },
+            {
+                low: 0,
+                onlyInteger: true,
+                showArea: false,
+                lineSmooth: Chartist.Interpolation.simple({
+                    divisor: 10,
+                    fillHoles: false
+                }),
+                fullWidth: true,
+                chartPadding: {
+                    right: 40,
+                    bottom: 40
+                },
+                plugins: [
+                    Chartist.plugins.legend({
+                        legendNames: [{% for year,month in searchsGraphs %}'{{ year }}'{% if not loop.last %},{% endif %}{% endfor %}],
+                        position: 'bottom'
+                    })
+                ]
+            });
+
+
+            /*Entreprise BTP*/
+
+            new Chartist.Line('#ChartistSimpleLineChart2', {
+                labels: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Dec'],
+                series: [
+                    {% for year,month in searchsGraphs2 %}
+                        [{% for val in month %}{{ val }}{% if not loop.last %},{% endif %}{% endfor %}]{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            },
+            {
+                low: 0,
+                onlyInteger: true,
+                showArea: false,
+                lineSmooth: Chartist.Interpolation.simple({
+                    divisor: 10,
+                    fillHoles: false
+                }),
+                fullWidth: true,
+                chartPadding: {
+                    right: 40,
+                    bottom: 40
+                },
+                plugins: [
+                    Chartist.plugins.legend({
+                        legendNames: [{% for year,month in searchsGraphs2 %}'{{ year }}'{% if not loop.last %},{% endif %}{% endfor %}],
+                        position: 'bottom'
+                    })
+                ]
+            });
+
+            /*
+             Chartist: Bar Chart - Overlapping On Mobile
+             */
+            (function() {
+                var data = [
+                    {% for organisme,values in apprenantsByOFGraph %}
+                    {
+                        'y'    : '{{ organisme }}',
+                        'a'    : {{ values.successed }},
+                        'b'    : {{ values.failed }}
+                    },
+                    {% endfor %}
+                ];
+
+                Morris.Bar({
+                    resize: true,
+                    element: 'ChartistOverlappingBarsOnMobile',
+                    data: data,
+                    xkey: 'y',
+                    ykeys: ['a', 'b'],
+                    labels: ['Réussites', 'Échecs'],
+                    barColors: ['#2baab1', '#0088cc'],
+                    fillOpacity: 0.7,
+                    smooth: false,
+                    stacked: true,
+                    hideHover: true
+                });
+
+            })();
+        })();
+    </script>
+{% endblock %}
+
+{% block headerscript %}
+<style>
+    .ct-chart .ct-series.ct-series-b .ct-bar {
+        stroke: #71A28A;
+    }
+</style>
+{% endblock %}

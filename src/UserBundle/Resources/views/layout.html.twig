@@ -1,0 +1,89 @@
+<!doctype html>
+<html class="fixed">
+<head>
+        <!-- Basic -->
+        <meta charset="UTF-8">
+        <title>EGF BTP LOGIN</title>
+        <meta name="keywords" content="EGF BTP LOGIN" />
+        <meta name="description" content="EGF BTP - LOGIN">
+        <link rel="shortcut icon" href="/favicon.png" type="image/png">
+        <!-- Mobile Metas -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+        <!-- Web Fonts  -->
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+
+        {% stylesheets filter='?cssrewrite'
+        'bundles/app/vendor/bootstrap/css/bootstrap.min.css'
+        'bundles/app/vendor/font-awesome/css/font-awesome.css'
+        'bundles/app/vendor/magnific-popup/magnific-popup.css'
+        'bundles/app/vendor/bootstrap-datepicker/css/bootstrap-datepicker3.css'
+        'bundles/app/css/theme.css'
+        'bundles/app/css/skins/default.css'
+        'bundles/app/css/theme-custom.css' %}
+        <link rel="stylesheet" href="{{ asset_url }}">
+        {% endstylesheets %}
+        <!-- Head Libs -->
+        <script src="{{  asset('bundles/app/vendor/modernizr/modernizr.js') }}"></script>
+        <style>
+            .body-sign-title {
+                color: #3d6898;
+                font-weight: bold;
+                text-align: center;
+                font-size: 18px;
+            }
+            .credit {
+                    color: #E8EBED;
+                    font-size: 18px;
+                    position: relative;
+                    text-align: right;
+                    padding: 15px;
+            }
+        </style>
+</head>
+<body style="background-image: url(background-1.jpg);background-position: right;background-repeat: no-repeat;background-size: cover;">
+<!-- start: page -->
+<section class="body-sign">
+        <div class="center-sign">
+                <div class="panel panel-sign">
+                        <div class="panel-title-sign mt-xl text-right">
+                                <h2 class="title text-uppercase text-weight-bold m-none"><i class="fa fa-user mr-xs"></i> Connexion</h2>
+                        </div>
+                        <div class="panel-body">
+                                <div class="text-center">
+                                <div class="body-sign-title">
+                                        <h1>Bienvenue</h1>
+                                        <p>Votre Espace Passeport Sécurité Intérim</p>
+                                </div>
+                                <a href="/" class="logo">
+                                        <img src="{{ asset('bundles/app/img/logo-egfbtp.png') }}" alt="EGF BTP" />
+                                </a>
+                                </div>
+                                {% block fos_user_content %}
+
+                                {% endblock fos_user_content %}
+                        </div>
+                </div>
+        </div>
+</section>
+<div class="credit">Crédit : EGF.BTP - @Architecte : Anne Demians</div>
+<!-- end: page -->
+
+{% javascripts
+        '@AppBundle/Resources/public/vendor/jquery/jquery.js'
+        '@AppBundle/Resources/public/vendor/jquery-ui/jquery-ui.min.js'
+        '@AppBundle/Resources/public/vendor/jquery-browser-mobile/jquery.browser.mobile.js'
+        '@AppBundle/Resources/public/vendor/bootstrap/js/bootstrap.js'
+        '@AppBundle/Resources/public/vendor/nanoscroller/nanoscroller.js'
+        'bundles/app/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js'
+        'bundles/app/vendor/magnific-popup/jquery.magnific-popup.js'
+        'bundles/app/js/date-custom.js'
+        '@AppBundle/Resources/public/vendor/jquery-placeholder/jquery-placeholder.js'
+        '@AppBundle/Resources/public/js/theme.js'
+        '@AppBundle/Resources/public/js/theme.custom.js'
+        '@AppBundle/Resources/public/js/theme.init.js' %}
+<script src="{{ asset_url }}"></script>
+{% endjavascripts %}
+</body>
+</html>

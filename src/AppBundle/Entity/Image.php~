@@ -1,0 +1,247 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
+
+/**
+ * Image
+ *
+ * @ORM\Table(name="image")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ImageRepository")
+ * @ORM\HasLifecycleCallbacks
+ */
+class Image
+{
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @var string
+     * @ORM\Column(name="extension", type="string", length=255)
+     */
+    private $extension;
+
+    /**
+     * @var string
+     * @ORM\Column(name="alt", type="string", length=255)
+     */
+    private $alt;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="original_name", type="string", length=255)
+     */
+    private $originalName;
+
+    /**
+     * @var string
+     * @ORM\Column(name="path", type="string", length=255, nullable=true)
+     */
+    private $path;
+
+    /**
+     * @Assert\File( maxSize="15M" )
+     */
+    private $file;
+
+    /**
+     * @var string
+     * @ORM\Column(name="filename", type="string", length=255)
+     */
+    private $filename;
+
+    private $tempFilename;
+
+    /**
+     * Get id
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set extension
+     *
+     * @param string $extension
+     *
+     * @return Image
+     */
+    public function setExtension($extension)
+    {
+        $this->extension = $extension;
+
+        return $this;
+    }
+
+    /**
+     * Get extension
+     *
+     * @return string
+     */
+    public function getExtension()
+    {
+        return $this->extension;
+    }
+
+    /**
+     * Set alt
+     *
+     * @param string $alt
+     *
+     * @return Image
+     */
+    public function setAlt($alt)
+    {
+        $this->alt = $alt;
+
+        return $this;
+    }
+
+    /**
+     * Get alt
+     *
+     * @return string
+     */
+    public function getAlt()
+    {
+        return $this->alt;
+    }
+
+
+    public function getFile()
+    {
+        return $this->file;
+    }
+
+    public function setFile(UploadedFile $file)
+    {
+        $this->file = $file;
+
+        // On vérifie si on avait déjà un fichier pour cette entité
+        if (null !== $this->filename) {
+            // On sauvegarde l'extension du fichier pour le supprimer plus tard
+            $this->tempFilename = $this->filename;
+
+            // On réinitialise les valeurs des attributs extension et alt
+            $this->extension = null;
+            $this->alt = null;
+        }
+    }
+
+    function randomString($length = 4) {
+        $str = "";
+        $characters = array_merge(range('A','Z'), range('a','z'), range('0','9'));
+        $max = count($characters) - 1;
+        for ($i = 0; $i < $length; $i++) {
+            $rand = mt_rand(0, $max);
+            $str .= $characters[$rand];
+        }
+        return $str;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     */
+    public function preUpload()
+    {
+        // Si jamais il n'y a pas de fichier (champ facultatif), on ne fait rien
+        if (null === $this->file) {
+            return;
+        }
+
+        // Et on génère l'attribut alt de la balise <img>, à la valeur du nom du fichier sur le PC de l'internaute
+        $this->alt = $this->file->getClientOriginalName();
+
+        // Le nom du fichier est son nom + un id unique, on doit juste stocker également son extension
+        $this->extension = $this->file->getClientOriginalExtension();
+        $file = preg_replace('/\.[^.\\s]{3,4}$/', '', $this->alt);
+        $this->filename = $file . '-' . $this->randomString() . '.'. $this->extension;
+    }
+
+    /**
+     * @ORM\PostPersist()
+     * @ORM\PostUpdate()
+     */
+    public function upload()
+    {
+        // Si jamais il n'y a pas de fichier (champ facultatif), on ne fait rien
+        if (null === $this->file) {
+            return;
+        }
+
+        // Si on avait un ancien fichier, on le supprime
+        if (null !== $this->tempFilename) {
+            $oldFile = $this->getUploadRootDir().'/'. $this->tempFilename;
+            if (file_exists($oldFile)) {
+                unlink($oldFile);
+            }
+        }
+
+        // On déplace le fichier envoyé dans le répertoire de notre choix
+        $this->file->move(
+            $this->getUploadRootDir(), // Le répertoire de destination
+            $this->filename  // Le nom du fichier à créer
+        );
+    }
+
+    /**
+     * @ORM\PreRemove()
+     */
+    public function preRemoveUpload()
+    {
+        // On sauvegarde temporairement le nom du fichier, car il dépend de l'id
+        $this->tempFilename = $this->getUploadRootDir().'/'.$this->filename;
+    }
+
+    /**
+     * @ORM\PostRemove()
+     */
+    public function removeUpload()
+    {
+        // En PostRemove, on n'a pas accès à l'id, on utilise notre nom sauvegardé
+        if (file_exists($this->tempFilename)) {
+            // On supprime le fichier
+            unlink($this->tempFilename);
+        }
+    }
+
+    // Retourne le chemin relatif vers l'image pour un navigateur
+    public function getUploadDir()
+    {
+        return 'images';
+    }
+
+    // Retourne le chemin relatif vers l'image pour notre code PHP
+    protected function getUploadRootDir()
+    {
+        return __DIR__.'/../../../../web/'.$this->getUploadDir();
+    }
+
+
+    public function getWebPath()
+    {
+        return $this->getUploadDir().'/'.$this->filename;
+    }
+
+    public function getFilename()
+    {
+        return $this->filename;
+    }
+
+}
+

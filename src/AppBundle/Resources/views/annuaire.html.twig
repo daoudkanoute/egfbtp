@@ -1,0 +1,101 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Annuaire{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+    <div class="search-content">
+        <div class="search-control-wrapper" style="margin-bottom: 20px;">
+            <div class="row">
+                {{ form_start(form, {'attr':{'class': 'form-horizontal form-bordered','novalidate': 'novalidate'}}) }}
+                    <div class="col-md-2">
+                        {{ form_widget(form.code) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form_widget(form.nom) }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ form_widget(form.prenom) }}
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="fa fa-birthday-cake"></i>
+                                </span>
+                                {{ form_widget(form.birthday, { 'id':'birthdayDate','attr': { 'class': 'form-control', 'data-plugin-masked-input': '', 'data-input-mask': '99/99/9999', 'placeholder': '__/__/____' }  }) }}
+                            </div>
+                        </div>
+                    </div>
+                <div class="col-md-2">
+                    {{ form_widget(form.ett,{'attr': { 'class':'form-control','data-plugin-multiselect':'', 'data-plugin-options':'{ "maxHeight": 200, "nonSelectedText": " Toutes les ETT ","selectAllName":true }'}} ) }}
+                </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary" type="submit">Rechercher</button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+        <div class="tab-content">
+            <div id="everything" class="tab-pane active">
+                <p class="total-results text-muted" style="padding-top: 10px;">{{ (apprenants.currentPageNumber-1)*25 + 1 }} à {{ (apprenants.currentPageNumber-1)*25+apprenants|length }} de {{ apprenants.getTotalItemCount }} résultas</p>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-none">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Date de naissance</th>
+                                <th>Date d’examen</th>
+                                <th>Résultat</th>
+                                <th>Attestation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apprenant in apprenants %}
+                            <tr>
+                                <td>{{ apprenant.code }}</td>
+                                <td>{{ apprenant.nom }}</td>
+                                <td>{{ apprenant.prenom }}</td>
+                                <td>{{ apprenant.createdAt|localizeddate('long', 'none', app.request.locale ) }}</td>
+                                <td>{{ apprenant.attestation.createdAt|localizeddate('long', 'none', app.request.locale ) }}</td>
+                                <td>{% if apprenant.attestation.successed %}
+                                        <span class="label label-success">Réussite</span>
+                                    {% else %}
+                                        <span class="label label-danger">Echec</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if apprenant.attestation.imageOF is null %}
+                                        <span class="label label-warning">Attestation en cours</span>
+                                    {% else %}
+                                        <a href="{{ '/images/'~apprenant.attestation.imageOF.fileName }}" target="_blank" download><span class="label label-info"><i class="fa fa-download"></i> Télécharger</span></a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                </table>
+                </div>
+                {{ knp_pagination_render(apprenants) }}
+            </div>
+        </div>
+    </div>
+{% endblock body %}
+
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function() {
+            $('#birthdayDate, #date').datepicker({
+                language: 'fr',
+                orientation: "bottom",
+                autoclose: true,
+                zIndexOffset: 9999
+            });
+        });
+    </script>
+{% endblock %}

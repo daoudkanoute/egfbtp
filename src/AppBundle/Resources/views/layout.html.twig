@@ -1,0 +1,345 @@
+<!doctype html>
+<html class="fixed" lang="fr">
+    <head>
+
+        <!-- Basic -->
+        <meta charset="UTF-8">
+
+        <title>EGF BTP | {% block title %}{% endblock %}</title>
+        <meta name="description" content="Dashboard de EGF BTP">
+        <meta name="author" content="EGF BTP">
+        <link rel="shortcut icon" href="/favicon.png" type="image/png">
+        <!-- Mobile Metas -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+        <!-- Web Fonts  -->
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+
+        {% stylesheets filter='?cssrewrite' output='css/index.css'
+        'bundles/app/vendor/bootstrap/css/bootstrap.min.css'
+        'bundles/app/vendor/bootstrap-fileupload/bootstrap-fileupload.min.css'
+        'bundles/app/vendor/pnotify/pnotify.custom.css'
+        'bundles/app/vendor/select2/css/select2.css'
+        'bundles/app/vendor/select2-bootstrap-theme/select2-bootstrap.css'
+        'bundles/app/vendor/jquery-datatables-bs3/assets/css/datatables.css'
+        'bundles/app/vendor/magnific-popup/magnific-popup.css'
+        'bundles/app/vendor/owl.carousel/assets/owl.carousel.css'
+        'bundles/app/vendor/owl.carousel/assets/owl.theme.default.css'
+        'bundles/app/vendor/bootstrap-timepicker/css/bootstrap-timepicker.css'
+        'bundles/app/css/circle.css'
+        'bundles/app/vendor/bootstrap-multiselect/bootstrap-multiselect.css'
+        'bundles/app/vendor/morris.js/morris.css'
+        'bundles/app/vendor/chartist/chartist.min.css'
+        'bundles/app/vendor/chartist/chartist-plugin-legend.css'
+        'bundles/app/css/theme.css'
+        'bundles/app/css/skins/default.css'
+        'bundles/app/css/theme-custom.css' %}
+        <link rel="stylesheet" href="{{ asset_url }}">
+        {% endstylesheets %}
+        {% block headerscript %}{% endblock %}
+
+        <!-- Head Libs -->
+        <script src="{{  asset('bundles/app/vendor/modernizr/modernizr.js') }}"></script>
+
+    </head>
+    <body>
+    <section class="body">
+
+        <!-- start: header -->
+        <header class="header">
+            <div class="logo-container">
+                <a href="{{ path('homepage') }}" class="logo">
+                    <img src="{{ asset('bundles/app/img/logo1.png') }}" height="35" alt="EGF BTP" />
+                </a>
+                <div class="visible-xs toggle-sidebar-left" data-toggle-class="sidebar-left-opened" data-target="html" data-fire-event="sidebar-left-opened">
+                    <i class="fa fa-bars" aria-label="Toggle sidebar"></i>
+                </div>
+            </div>
+
+            <!-- start: search & user box -->
+            <div class="header-right">
+                {% if notifications %}
+                <ul class="notifications">
+                    <li>
+                        <a href="#" class="dropdown-toggle notification-icon" data-toggle="dropdown">
+                            <i class="fa fa-bell"></i>
+                            <span class="badge">{{ notifications.attestations_en_attente|length }}</span>
+                        </a>
+
+                        <div class="dropdown-menu notification-menu">
+                            <div class="notification-title">
+                                <span class="pull-right label label-default">{{ notifications.attestations_en_attente|length }}</span>
+                                Attestations en attente
+                            </div>
+                            {% if notifications.attestations_en_attente %}
+                            <div class="content">
+                                <ul>
+                                    {% for apprenant in notifications.attestations_en_attente %}
+                                    <li>
+                                        <a href="{{ path('of_edit_manuelle_apprenant',{'code':apprenant.code}) }}" class="clearfix">
+                                            <span class="title">{{ apprenant.prenom~" "~apprenant.nom }}</span>
+                                            <span class="message">{{ apprenant.attestation.date|date('d/m/Y') }}</span>
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </li>
+                </ul>
+                {% endif %}
+                <span class="separator"></span>
+                <div id="userbox" class="userbox">
+                    <a href="#" data-toggle="dropdown">
+                        <figure class="profile-picture">
+                            <i class="fa fa-user avatar" aria-hidden="true"></i>
+                        </figure>
+                        <div class="profile-info">
+                            <span class="name">{{ is_granted('ROLE_ADMIN') ? app.user.username : app.user.societe }}</span>
+                        </div>
+                        <i class="fa custom-caret"></i>
+                    </a>
+
+                    <div class="dropdown-menu">
+                        <ul class="list-unstyled">
+                            <li class="divider"></li>
+                            <li>
+                                {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                                    <a href="{{ path('homepage',{'_switch_user':'_exit'}) }}">
+                                        <i class="fa fa-power-off"></i> Se déconnecter
+                                    </a>
+                                {% else %}
+                                    <a role="menuitem" tabindex="-1" href="{{ path('logout') }}"><i class="fa fa-power-off"></i> Se déconnecter</a>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- end: search & user box -->
+        </header>
+        <!-- end: header -->
+
+        <div class="inner-wrapper">
+            <!-- start: sidebar -->
+            <aside id="sidebar-left" class="sidebar-left">
+
+                <div class="sidebar-header">
+                    <div class="sidebar-title">
+                        Annuaires
+                    </div>
+                </div>
+
+                <div class="nano">
+                    <div class="nano-content">
+                        <nav id="menu" class="nav-main" role="navigation">
+
+                            {% set currentPage = app.request.attributes.get( '_route' ) %}
+                            <ul class="nav nav-main">
+                                <li {% if currentPage == 'annuaire' %}class="nav-active"{% endif %}>
+                                    <a href="{{ path('annuaire') }}">
+                                        <i class="fa fa-home" aria-hidden="true"></i>
+                                        <span>Apprenants</span>
+                                    </a>
+                                </li>
+                                <li {% if currentPage == 'organismes_formations' %}class="nav-active"{% endif %}>
+                                    <a href="{{ path('organismes_formations') }}">
+                                        <i class="fa fa-building" aria-hidden="true"></i>
+                                        <span>Organismes de formation</span>
+                                    </a>
+                                </li>
+                                <li {% if currentPage == 'entreprises_btp' %}class="nav-active"{% endif %}>
+                                    <a href="{{ path('entreprises_btp') }}">
+                                        <i class="fa fa-building" aria-hidden="true"></i>
+                                        <span>Entreprises de Travail Temporaire</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% if is_granted('ROLE_OF') %}
+                            <hr class="separator" />
+
+                            <div class="sidebar-widget widget-tasks">
+                                <div class="widget-header">
+                                    <h6>Organisme de formation</h6>
+                                </div>
+                                <div class="widget-content">
+                                    <ul class="nav nav-main">
+                                        <li class="nav-parent{% if currentPage starts with 'of_' %} nav-expanded{% endif %}">
+                                            <a>
+                                                <i class="fa fa-user-plus" aria-hidden="true"></i>
+                                                <span>Apprenants</span>
+                                            </a>
+                                            <ul class="nav nav-children">
+                                                <li {% if currentPage == 'of_list_apprenants' %}class="nav-active"{% endif %}>
+                                                    <a href="{{ path('of_list_apprenants') }}">
+                                                        Mes apprenants
+                                                    </a>
+                                                </li>
+                                                <li {% if currentPage == 'of_add_apprenant' %}class="nav-active"{% endif %}>
+                                                    <a href="{{ path('of_add_apprenant') }}">
+                                                        Ajouter un apprenant
+                                                    </a>
+                                                </li>
+                                                <li {% if currentPage == 'of_add_manuelle_apprenant' %}class="nav-active"{% endif %}>
+                                                    <a href="{{ path('of_add_manuelle_apprenant') }}">
+                                                        Ajouter manuellement
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <hr class="separator" />
+
+                            <div class="sidebar-widget widget-tasks">
+                                <div class="widget-header">
+                                    <h6>Administration</h6>
+                                </div>
+                                <div class="widget-content">
+                                    <ul class="nav nav-main">
+                                        <li class="nav-parent{% if currentPage starts with 'admin_users' %} nav-expanded{% endif %}">
+                                            <a>
+                                                <i class="fa fa-users" aria-hidden="true"></i>
+                                                <span>Utilisateurs</span>
+                                            </a>
+                                            <ul class="nav nav-children">
+                                                <li {% if currentPage == 'admin_users_ett' %}class="nav-active"{% endif %}>
+                                                    <a href="{{ path('admin_users_ett') }}">
+                                                        Agences intérimaires
+                                                    </a>
+                                                </li>
+                                                <li {% if currentPage == 'admin_users_of' %}class="nav-active"{% endif %}>
+                                                    <a href="{{ path('admin_users_of') }}">
+                                                        Organismes de formation
+                                                    </a>
+                                                </li>
+                                                <li {% if currentPage == 'admin_users_btp' %}class="nav-active"{% endif %}>
+                                                    <a href="{{ path('admin_users_btp') }}">
+                                                        Entreprises de BTP
+                                                    </a>
+                                                </li>
+                                                <li {% if currentPage == 'admin_list_apprenants' %}class="nav-active"{% endif %}>
+                                                    <a href="{{ path('admin_list_apprenants') }}">
+                                                        Les apprenants
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li {% if currentPage == 'admin_statistiques' %}class="nav-active"{% endif %}>
+                                            <a href="{{ path('admin_statistiques') }}">
+                                                <i class="fa fa-line-chart" aria-hidden="true"></i>
+                                                <span>Statistiques</span>
+                                            </a>
+                                        </li>
+                                        <li {% if currentPage == 'qcm_edit' %}class="nav-active"{% endif %}>
+                                            <a href="{{ path('qcm_edit') }}">
+                                                <i class="fa fa-question-circle" aria-hidden="true"></i>
+                                                <span>QCM</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
+            <!-- end: sidebar -->
+
+            <section role="main" class="content-body">
+                {% block breadcrumbs_block %}
+                <header class="page-header">
+                    <h2>{{ block('title') }}</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{{ path('homepage') }}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            {% block breadcrumbs %}{% endblock %}
+                        </ol>
+
+                    </div>
+                </header>
+                {% endblock %}
+
+                <!-- start: page -->
+                {% block body %}{% endblock %}
+                <!-- end: page -->
+            </section>
+        </div>
+        {% block sidebare %}{% endblock %}
+    </section>
+
+    {% javascripts
+    '@AppBundle/Resources/public/vendor/jquery/jquery.js'
+    '@AppBundle/Resources/public/vendor/jquery-ui/jquery-ui.min.js'
+    '@AppBundle/Resources/public/vendor/jquery-browser-mobile/jquery.browser.mobile.js'
+    '@AppBundle/Resources/public/vendor/bootstrap/js/bootstrap.js'
+    '@AppBundle/Resources/public/vendor/nanoscroller/nanoscroller.js'
+    'bundles/app/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js'
+    'bundles/app/js/date-custom.js'
+    '@AppBundle/Resources/public/vendor/autosize/autosize.js'
+    '@AppBundle/Resources/public/vendor/bootstrap-fileupload/bootstrap-fileupload.min.js'
+    '@AppBundle/Resources/public/vendor/bootstrap-confirmation/bootstrap-confirmation.js'
+    '@AppBundle/Resources/public/vendor/bootstrap-timepicker/bootstrap-timepicker.js'
+    '@AppBundle/Resources/public/vendor/bootstrap-wizard/jquery.bootstrap.wizard.js'
+    '@AppBundle/Resources/public/vendor/pnotify/pnotify.custom.js'
+    '@AppBundle/Resources/public/vendor/select2/js/select2.js'
+    '@AppBundle/Resources/public/vendor/jquery-datatables/media/js/jquery.dataTables.js'
+    '@AppBundle/Resources/public/vendor/jquery-datatables-bs3/assets/js/datatables.js'
+    '@AppBundle/Resources/public/vendor/owl.carousel/owl.carousel.js'
+    '@AppBundle/Resources/public/vendor/bootstrap-multiselect/bootstrap-multiselect.js'
+    '@AppBundle/Resources/public/vendor/fuelux/js/spinner.js'
+    '@AppBundle/Resources/public/js/theme.js'
+    '@AppBundle/Resources/public/js/theme.custom.js'
+    '@AppBundle/Resources/public/js/theme.init.js' %}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    <script>
+        {% for message in app.session.flashbag.get('success') %}
+            var notice = new PNotify({
+                title: 'Success !',
+                text: '{{ message }}',
+                type: 'success',
+                addclass: 'click-2-close',
+                buttons: {
+                    closer: true,
+                    sticker: false
+                }
+            });
+
+            notice.get().click(function() {
+                notice.remove();
+            });
+        {% endfor %}
+
+        {% for message in app.session.flashbag.get('error') %}
+            var error = new PNotify({
+                title: 'Erreur !',
+                text: '{{ message }}',
+                type: 'failed',
+                addclass: 'click-2-close',
+                buttons: {
+                    closer: true,
+                    sticker: false
+                }
+            });
+
+            notice.get().click(function() {
+                notice.remove();
+            });
+        {% endfor %}
+    </script>
+    {% block javascripts %}{% endblock %}
+    </body>
+</html>

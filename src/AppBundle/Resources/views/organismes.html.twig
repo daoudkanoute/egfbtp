@@ -1,0 +1,39 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Organismes de formation{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+{% block body %}
+    <div class="search-content">
+        <div class="tab-content">
+            <div id="everything" class="tab-pane active">
+                <p class="total-results text-muted" style="padding-top: 10px;">{{ (users.currentPageNumber-1)*25 + 1 }} à {{ (users.currentPageNumber-1)*25+users|length }} de {{ users.getTotalItemCount }} résultas</p>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-none">
+                        <thead>
+                            <tr>
+                                <th>Organisme</th>
+                                <th>Adresse</th>
+                                <th>Téléphone</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.societe }}</td>
+                                <td>{{ user.adresse }}</td>
+                                <td> {{ user.telephone ? user.telephone : '---' }} </td>
+                                <td> {{ user.email ? user.email : '---' }} </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                </table>
+                </div>
+                {{ knp_pagination_render(users) }}
+            </div>
+        </div>
+    </div>
+{% endblock body %}

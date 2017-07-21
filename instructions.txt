@@ -1,0 +1,13 @@
+eval `ssh-agent -s` && ssh-add
+
+-install git
+-install composer
+-generate ssh keys
+-create branches dev + master
+
+grep -rnw '/etc/php5' -e "setfacl"
+grep -rnw '/etc' -e "setfacl"
+grep -rnw '/' -e "setfacl"
+/usr/bin/setfacl
+setfacl --help
+/usr/bin/env setfacl

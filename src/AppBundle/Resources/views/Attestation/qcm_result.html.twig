@@ -1,0 +1,92 @@
+{% extends 'AppBundle::layout.html.twig' %}
+{% block title %}Résultat du QCM{% endblock %}
+
+{% block breadcrumbs %}
+    <li><span>{{ block('title') }}</span></li>
+{% endblock %}
+
+
+{% block headerscript %}
+    <script type='text/javascript' src='https://content.jwplatform.com/libraries/NcS4YRWc.js'></script>
+    <style>
+        .title-condidate {
+            font-size: 14px;
+            margin-top: 5px;
+            border-bottom: 1px solid #efefef;
+            color: #4F87C6;
+        }
+        .has-image {
+            text-align: center;
+            padding-bottom: 25px;
+        }
+        .has-image label {
+            text-align: center;
+            padding: 7px 10px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .has-image label:before {
+            left: 50%;
+            bottom: 0;
+            top: 95%;
+        }
+        .radio-custom.has-image input[type="radio"]:checked + label:after {
+            top: 0;
+            left: 5px;
+            bottom: 0;
+            margin-top: 6px;
+        }
+        .checkbox-custom input[type="checkbox"]:checked + label:after {
+            top: 0;
+            left: 3px;
+            bottom: 0;
+            margin-top: 6px;
+        }
+        html.fixed .content-body { margin-left: 0; }
+        html.fixed .header, html.fixed .sidebar-left, html.fixed .page-header { display: none; }
+        html.fixed .inner-wrapper { padding: 0; }
+        @media print {
+            html.fixed .content-body { margin-left: 0; }
+            html.fixed .header,
+            html.fixed .sidebar-left,
+            html.fixed .page-header,
+            .sound-player,
+            .print-btn { display: none; }
+            html.fixed .inner-wrapper { padding: 0; }
+        }
+        .tab-content .tab-pane {
+            display: none;
+        }
+        .tab-content .active {
+            display: block;
+        }
+        .panel-footer {
+            background-color: transparent;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <section class="panel">
+        <div class="panel-body">
+            <div class="col-md-12 text-center">
+                {% if apprenant.attestation.successed %}
+                    <h2 class="text-success">Félicitation !</h2>
+                    <p>Vous avez réussi votre test « Passeport Sécurité Intérim » (<span class="label-success">&nbsp;{{ apprenant.attestation.percent }}%&nbsp;</span>)</p>
+                    <p>Bon travail en toute sécurité !</p>
+                    {% if apprenant.attestation.imageOF %}
+                    <p class="text-bold">Vous pouvez consultez votre Attestation en cliquant <a href="{{ '/images/'~apprenantExist.attestation.imageOF.fileName }}" target="_blank">ici</a></p>
+                    {% endif %}
+                {% else %}
+                    <h2 class="text-danger">Désolé !</h2>
+                    <p>Nous sommes désolés, vous n’avez pas réussi le test « Passeport Sécurité Intérim » (<span class="label-danger">&nbsp;{{ apprenant.attestation.percent }}%&nbsp;</span>)</p>
+                {% endif %}
+                <hr/>
+                <div class="text-center">
+                    <a href="{{ path('attestation_view',{'code':apprenant.code}) }}" class="btn btn-success">Télécharger l'attestation</a>
+                    <a href="{{ path('attestation_view',{'code':apprenant.code, 'print':true}) }}" class="btn btn-info">Imprimer l'attestation</a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock body %}

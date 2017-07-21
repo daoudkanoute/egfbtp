@@ -1,0 +1,63 @@
+{% trans_default_domain 'FOSUserBundle' %}
+
+{% if error %}
+    <div class="alert alert-danger">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        {{ error.messageKey|trans(error.messageData, 'security') }}
+    </div>
+{% endif %}
+
+
+<form action="{{ path("fos_user_security_check") }}" method="post">
+    {% if csrf_token %}
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}" />
+    {% endif %}
+
+    <div class="form-group mb-lg">
+        <label>Email</label>
+        <div class="input-group input-group-icon">
+            <input type="text" id="username" name="_username" value="{{ last_username }}" required="required" class="form-control input-lg" />
+            <span class="input-group-addon">
+                <span class="icon icon-lg">
+                    <i class="fa fa-user"></i>
+                </span>
+            </span>
+        </div>
+    </div>
+
+    <div class="form-group mb-lg">
+        <div class="clearfix">
+            <label class="pull-left">Mot de passe</label>
+            {#<a href="pages-recover-password.html" class="pull-right">Mot de passe oublié?</a>#}
+        </div>
+        <div class="input-group input-group-icon">
+            <input type="password" id="password" name="_password" required="required" class="form-control input-lg" />
+            <span class="input-group-addon">
+                <span class="icon icon-lg">
+                    <i class="fa fa-lock"></i>
+                </span>
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="checkbox-custom checkbox-default">
+                <input type="checkbox" id="remember_me" name="_remember_me" value="on" />
+                <label for="RememberMe">Se souvenir de moi</label>
+            </div>
+        </div>
+        <div class="col-sm-4 text-right">
+            <input type="submit" name="_submit" class="btn btn-primary hidden-xs" value="Connexion" />
+            <input type="submit"  name="_submit" class="btn btn-primary btn-block btn-lg visible-xs mt-lg" value="Connexion" />
+        </div>
+    </div>
+    <hr/>
+    <p class="text-center">Entreprise de Travail Temporaire pas encore inscrite ? <a href="{{ path('fos_user_registration_register') }}">Inscrivez-vous ici</a></p>
+    <hr/>
+    <p class="text-center">Entreprise de BTP pas encore inscrite ? <a href="{{ path('fos_user_registration_register') }}?t=E_BTP">Inscrivez-vous ici</a></p>
+    <hr/>
+    <p class="text-center">Mot de passe oublié ? <a href="{{ path('fos_user_resetting_request') }}">Cliquez ici</a></p>
+    <hr/>
+    <p class="text-center text-muted mt-md mb-md">Il est rappelé aux entreprises de travail temporaire et aux entreprises utilisatrices que la délivrance du Passeport Sécurité Intérim ne les exonère pas de l’ensemble des obligations mises à leur charge par le code du travail en matière d’accueil et de formation des salariés intérimaires.</p>
+</form>
