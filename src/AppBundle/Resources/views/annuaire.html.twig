@@ -60,7 +60,7 @@
                                 <td>{{ apprenant.code }}</td>
                                 <td>{{ apprenant.nom }}</td>
                                 <td>{{ apprenant.prenom }}</td>
-                                <td>{{ apprenant.createdAt|localizeddate('long', 'none', app.request.locale ) }}</td>
+                                <td>{{ apprenant.birthday|localizeddate('long', 'none', app.request.locale ) }}</td>
                                 <td>{{ apprenant.attestation.createdAt|localizeddate('long', 'none', app.request.locale ) }}</td>
                                 <td>{% if apprenant.attestation.successed %}
                                         <span class="label label-success">Réussite</span>

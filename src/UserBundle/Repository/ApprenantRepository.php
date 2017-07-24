@@ -27,7 +27,7 @@ class ApprenantRepository extends \Doctrine\ORM\EntityRepository
                 }
                 if($data['prenom']) {
                     $qb->andWhere($qb->expr()->like('LOWER(a.prenom)',':prenom'))
-                        ->setParameter('prenom', '%"'.strtolower($data['prenom']).'"%');
+                        ->setParameter('prenom', '%'.strtolower($data['prenom']).'%');
                 }
                 if($data['birthday']) {
                     $qb->andWhere($qb->expr()->eq('a.birthday',':birthday'))
