@@ -63,12 +63,12 @@ class User extends BaseUser
     protected $siret;
 
     /**
-     * @ORM\Column(type="string", length=30, nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      *
      * @Assert\NotBlank(message="Veuillez saisir l'adresse.", groups={"Registration"})
      * @Assert\Length(
      *     min=3,
-     *     max=25,
+     *     max=255,
      *     minMessage="l'adresse est très courte.",
      *     maxMessage="l'adresse est très longue.",
      *     groups={"Registration"}
