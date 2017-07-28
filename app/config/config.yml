@@ -72,6 +72,7 @@ doctrine:
                 day:   AppBundle\DQL\Day
                 month: AppBundle\DQL\Month
                 year:  AppBundle\DQL\Year
+                DATE: DoctrineExtensions\Query\Mysql\Date
 
 # Swiftmailer Configuration
 swiftmailer:

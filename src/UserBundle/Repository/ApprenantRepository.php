@@ -30,11 +30,11 @@ class ApprenantRepository extends \Doctrine\ORM\EntityRepository
                         ->setParameter('prenom', '%'.strtolower($data['prenom']).'%');
                 }
                 if($data['birthday']) {
-                    /*echo "<pre>";
-                    print_r($data['birthday']);
-                    die;*/
-                    $qb->andWhere($qb->expr()->eq('a.birthday',':birthday'))
-                    ->setParameter('birthday',$data['birthday']->date);
+                    $birthday = $data['birthday']->format('Y').'-'.$data['birthday']->format('m').'-'.$data['birthday']->format('d');
+ 
+                    $qb->andWhere($qb->expr()->eq('DATE(a.birthday)',':birthday'))
+                        ->setParameter('birthday', $birthday);
+
                 }
                 if(!$data['ett']->isEmpty()) {
                     $e = [];
